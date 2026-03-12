@@ -1,0 +1,38 @@
+services:
+  frontend:
+    build: 
+      context: .
+      dockerfile: .docker/Dockerfile
+    ports:
+      - 5173:5173
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+    - CHOKIDAR_USEPOLLING=true
+
+  db:
+    image: mariadb:latest
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: root_password
+      MARIADB_DATABASE: mijn_database
+      MARIADB_USER: gebruiker
+      MARIADB_PASSWORD: wachtwoord
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db # Dit moet exact de naam van de db-service hierboven zijn
+    depends_on:
+      - db
+
+volumes:
+  mariadb_data:
