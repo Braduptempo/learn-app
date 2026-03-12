@@ -1,0 +1,149 @@
+.mainWrapper {
+  /* Zorgt voor de ruimte rondom het hoofdscherm */
+  padding: 1rem 1rem 1rem 0; /* Boven, Rechts, Onder hebben ruimte. Links is 0 omdat de sidebar daar al padding heeft */
+  height: 100vh;
+  box-sizing: border-box;
+  flex: 1; /* Zorgt dat het dashboard alle overige ruimte inneemt */
+  display: flex; ;
+  background-color: var(--bg);
+}
+
+.dashboard {
+  height: 100%;
+  width: 100%;
+  background-color: var(--bg-dark); /* Of var(--bg-light) als je contrast wilt */
+  border-radius: 20px;
+  border: 2px solid var(--border);
+  padding: 2rem;
+  box-sizing: border-box;
+  overflow-y: auto; /* Zorgt dat je kunt scrollen binnen het paneel als de content lang is */
+}
+/* Container voor titel en de toevoegknop */
+.headerSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.addCourseBtn {
+  background-color: var(--primary);
+  color: var(--bg-dark);
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: transform 0.2s, filter 0.2s;
+}
+
+.addCourseBtn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.addCourseBtn:active {
+  transform: translateY(0);
+}
+
+.plusIcon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+/* De rest van je bestaande styles... */
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  filter: grayscale(1) opacity(0.5); /* Maakt de emoji wat subtieler */
+}
+
+.pageTitle {
+  color: var(--text);
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.searchWrapper {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 500px;
+}
+
+.searchInput {
+  width: 100%;
+  background-color: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border-muted);
+  border-radius: 50px;
+  padding: 0.6rem 1rem 0.6rem 2.5rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  border-color: var(--highlight);
+}
+
+.settingsBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border-muted);
+  border-radius: 50px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+
+  flex-shrink: 0; /* Zorgt dat de knop niet krimpt als de ruimte kleiner wordt */
+  white-space: nowrap; /* Zorgt dat de tekst niet op meerdere regels gaat als de ruimte kleiner wordt */
+}
+
+.courseCard {
+  max-width: 100%;
+  background-color: var(--bg-light);
+  border: 2px solid var(--border-muted);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.courseName {
+  color: var(--text);
+  font-size: 1.5rem;
+}
+
+.startBtn {
+  background-color: var(--primary);
+  color: var(--bg-dark);
+  border: none;
+  border-radius: 50px;
+  padding: 0.6rem 3rem;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.startBtn:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
