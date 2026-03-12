@@ -16,7 +16,9 @@
 }
 
 .app-layout {
-  display: flex;
-  min-height: 100vh;
-  font-family: sans-serif;
+ display: flex;
+  width: 100vw;  /* Gebruik de volle breedte van de viewport */
+  height: 100vh; /* Gebruik de volle hoogte */
+  background-color: var(--bg);
+  overflow: hidden; /* Voorkom dubbele scrollbars */ 
 }
