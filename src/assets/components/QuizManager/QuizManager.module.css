@@ -1,0 +1,101 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-muted);
+  padding-bottom: 15px;
+}
+
+.title { color: var(--text); }
+
+.vragenLijst {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.vraagCard {
+  background: var(--bg-light);
+  border: 1px solid var(--border-muted);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.tekst {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: var(--text);
+  margin: 5px 0 10px 0;
+}
+
+.antwoordenPreview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.correct { color: var(--success); }
+.wrong { color: var(--text-muted); }
+
+.acties {
+  display: flex;
+  gap: 10px;
+}
+
+.editBtn, .deleteBtn, .backBtn {
+  background: var(--bg);
+  border: 1px solid var(--border-muted);
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.deleteBtn:hover { border-color: var(--danger); background: var(--bg-dark); }
+.addBtn {
+  background: var(--primary);
+  color: var(--bg-dark);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.headerActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.secondaryBtn {
+  background-color: var(--bg);
+  border: 1px solid var(--border-muted);
+  color: var(--text);
+  padding: 8px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.secondaryBtn:hover {
+  border-color: var(--primary);
+}
+
+.leftHeader {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}

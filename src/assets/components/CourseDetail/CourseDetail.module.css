@@ -94,3 +94,41 @@
   background-color: var(--primary);
   color: var(--bg-dark);
 }
+
+.buttonGroup {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.quizBtn {
+  background-color: var(--bg);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.quizBtn:hover {
+  border-color: var(--highlight);
+  color: var(--text);
+  background-color: var(--bg-light);
+}
+
+.playBtn {
+  background-color: var(--primary);
+  color: var(--bg-dark);
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.playBtn:hover {
+  transform: scale(1.05);
+}
