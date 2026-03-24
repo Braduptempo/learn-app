@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './QuizManager.module.css';
-import { type Vraag } from '../../../utils/types';
+import { type Vraag, STANDAARD_CATEGORIEEN } from '../../../utils/types';
 
 interface QuizManagerProps {
   moduleNaam: string;
@@ -9,30 +9,26 @@ interface QuizManagerProps {
   onAddVraag: () => void;
   onDeleteVraag: (id: number) => void;
   onEditVraag: (vraag: Vraag) => void;
-  onImportVragen: (vragen: Vraag[]) => void; // Nieuwe prop voor de import
+  onImportVragen: (vragen: Vraag[]) => void;
 }
 
 const QuizManager = ({ 
-  moduleNaam, 
-  vragen, 
-  onBack, 
-  onAddVraag, 
-  onDeleteVraag, 
-  onEditVraag,
-  onImportVragen 
+  moduleNaam, vragen, onBack, onAddVraag, onDeleteVraag, onEditVraag, onImportVragen 
 }: QuizManagerProps) => {
+  const [filter, setFilter] = useState('Alle');
 
-  // Functie: Exporteer vragen naar JSON bestand
-  const exporteerVragen = () => {
-    if (vragen.length === 0) {
-      alert("Er zijn geen vragen om te exporteren.");
-      return;
-    }
+  const gefilterdeVragen = filter === 'Alle' 
+    ? vragen 
+    : vragen.filter(v => v.categorie === filter);
 
+  // --- LOGICA VOOR EXPORT ---
+  const handleExport = () => {
+    if (vragen.length === 0) return alert("Geen vragen om te exporteren.");
+    
     const dataStr = JSON.stringify(vragen, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     
-    const exportFileDefaultName = `${moduleNaam.replace(/\s+/g, '-').toLowerCase()}-quiz.json`;
+    const exportFileDefaultName = `${moduleNaam.replace(/\s+/g, '_')}_quiz.json`;
     
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -40,31 +36,27 @@ const QuizManager = ({
     linkElement.click();
   };
 
-  // Functie: Importeer vragen uit een JSON bestand
-  const importeerVragen = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const fileReader = new FileReader();
+  // --- LOGICA VOOR IMPORT ---
+  const importeerBestand = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    
-    if (file) {
-      fileReader.onload = (e) => {
-        try {
-          const content = e.target?.result as string;
-          const geimporteerdeVragen = JSON.parse(content);
-          
-          if (Array.isArray(geimporteerdeVragen)) {
-            onImportVragen(geimporteerdeVragen); 
-            alert(`${geimporteerdeVragen.length} vragen succesvol geïmporteerd!`);
-          } else {
-            throw new Error("Ongeldig formaat");
-          }
-        } catch (error) {
-          alert("Fout bij het lezen van het bestand. Zorg dat het een geldig JSON-bestand is.");
-        }
-      };
-      fileReader.readAsText(file);
-    }
-    // Reset de input zodat hetzelfde bestand opnieuw gekozen kan worden
-    event.target.value = '';
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const json = JSON.parse(e.target?.result as string);
+        const gevalideerd = Array.isArray(json) ? json.map(v => ({
+          ...v,
+          id: v.id || Date.now() + Math.random(),
+          categorie: v.categorie || 'Algemeen'
+        })) : [];
+        onImportVragen(gevalideerd);
+      } catch (err) {
+        alert("Fout bij het lezen van het JSON bestand.");
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; 
   };
 
   return (
@@ -72,46 +64,56 @@ const QuizManager = ({
       <div className={styles.header}>
         <div className={styles.leftHeader}>
           <button onClick={onBack} className={styles.backBtn}>← Terug</button>
-          <h2 className={styles.title}>Quiz Beheer: {moduleNaam}</h2>
+          <h2 className={styles.title}>{moduleNaam}</h2>
         </div>
         
         <div className={styles.headerActions}>
-          <button onClick={exporteerVragen} className={styles.secondaryBtn}>📤 Export</button>
+          {/* 1. Filter */}
+          <select 
+            value={filter} 
+            onChange={(e) => setFilter(e.target.value)} 
+            className={styles.filterSelect}
+          >
+            <option value="Alle">Filter: Alle ({vragen.length})</option>
+            {STANDAARD_CATEGORIEEN.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+
+          {/* 2. EXPORT (Nieuw hersteld) */}
+          <button onClick={handleExport} className={styles.secondaryBtn}>
+            📤 Export JSON
+          </button>
+
+          {/* 3. IMPORT */}
           <label className={styles.secondaryBtn}>
-            📥 Import
+            📥 Import JSON
             <input 
               type="file" 
               accept=".json" 
-              onChange={importeerVragen} 
+              onChange={importeerBestand} 
               style={{ display: 'none' }} 
             />
           </label>
-          <button onClick={onAddVraag} className={styles.addBtn}>+ Vraag Toevoegen</button>
+
+          {/* 4. Toevoegen */}
+          <button onClick={onAddVraag} className={styles.addBtn}>+ Vraag</button>
         </div>
       </div>
 
       <div className={styles.vragenLijst}>
-        {vragen.length === 0 ? (
-          <div className={styles.emptyState}>
-            <p>Er zijn nog geen vragen voor deze module.</p>
-            <p>Maak er zelf een aan of importeer een bestaand JSON-bestand.</p>
-          </div>
+        {gefilterdeVragen.length === 0 ? (
+          <p className={styles.emptyMsg}>Geen vragen gevonden in deze categorie.</p>
         ) : (
-          vragen.map((v, index) => (
+          gefilterdeVragen.map((v) => (
             <div key={v.id} className={styles.vraagCard}>
               <div className={styles.vraagContent}>
-                <span className={styles.number}>#{index + 1}</span>
-                <p className={styles.tekst}>{v.vraagTekst}</p>
-                <div className={styles.antwoordenPreview}>
-                  <span className={styles.correct}>✔ {v.antwoorden[0]}</span>
-                  <span className={styles.wrong}>✖ {v.antwoorden[1]}</span>
-                  <span className={styles.wrong}>✖ {v.antwoorden[2]}</span>
-                  <span className={styles.wrong}>✖ {v.antwoorden[3]}</span>
+                <div className={styles.metaInfo}>
+                  <span className={styles.categoryTag}>{v.categorie || 'Algemeen'}</span>
                 </div>
+                <p className={styles.tekst}>{v.vraagTekst}</p>
               </div>
               <div className={styles.acties}>
-                <button onClick={() => onEditVraag(v)} className={styles.editBtn}>✏️</button>
-                <button onClick={() => onDeleteVraag(v.id)} className={styles.deleteBtn}>🗑️</button>
+                <button onClick={() => onEditVraag(v)} className={styles.editBtn} title="Bewerken">✏️</button>
+                <button onClick={() => onDeleteVraag(v.id)} className={styles.deleteBtn} title="Verwijderen">🗑️</button>
               </div>
             </div>
           ))

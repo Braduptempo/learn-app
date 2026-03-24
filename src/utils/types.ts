@@ -4,4 +4,16 @@ export interface Vraag {
   vraagTekst: string;
   antwoorden: string[];
   correctAntwoordIndex: number;
+  categorie?: string;
+  uitleg?: string;
 }
+
+export const STANDAARD_CATEGORIEEN = [
+  "Algemeen",
+  "Hardware",
+  "Software",
+  "Netwerken",
+  "Beveiliging",
+  "Wetgeving",
+  "Cloud"
+];
