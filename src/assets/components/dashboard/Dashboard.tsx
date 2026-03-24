@@ -1,7 +1,12 @@
 import { useState } from 'react';
-import styles from './dashboard.module.css';
+import styles from './Dashboard.module.css';
 
-const Dashboard = () => {
+interface DashboardProps {
+  onSelectCourse: (name: string) => void;
+}
+
+
+const Dashboard = ({ onSelectCourse }: DashboardProps) => {
   const [vakken, setVakken] = useState(['Security', 'Databases']);
 
   const voegVakToe = () => {
@@ -56,7 +61,10 @@ const Dashboard = () => {
                   ✏️
                 </button>
               </div>
-              <button className={styles.startBtn}>Start</button>
+              <button 
+                className={styles.startBtn} 
+                onClick={() => onSelectCourse(vak)}
+              >Start</button>
             </div>
           ))}
         </div>

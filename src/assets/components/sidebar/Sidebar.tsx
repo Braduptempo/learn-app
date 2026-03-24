@@ -1,4 +1,4 @@
-import styles from './sidebar.module.css';
+import styles from './Sidebar.module.css';
 
 const Sidebar = () => {
   const menuItems = ['Overzicht', 'Vakken', 'Resultaten'];
