@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styles from './CourseDetail.module.css';
 
 interface Module {
@@ -9,6 +9,19 @@ interface Module {
 interface Props {
   courseName: string;
   onBack: () => void;
+}
+
+interface Vraag {
+  id: number;
+  vraagTekst: string;
+  antwoorden: string[]; // [goed, fout1, fout2, fout3]
+  correctAntwoordIndex: number; // meestal 0 als je het eerste antwoord altijd als 'goed' opslaat
+}
+
+interface Module {
+  id: number;
+  naam: string;
+  quiz?: Vraag[]; // Optioneel: niet elke module hoeft direct een quiz te hebben
 }
 
 const CourseDetail = ({ courseName, onBack }: Props) => {
