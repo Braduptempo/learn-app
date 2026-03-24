@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import QuizEditor from '../QuizEditor/QuizEditor';
+import {type Vraag} from '../../../utils/types';
 import styles from './CourseDetail.module.css';
 
 interface Module {
   id: number;
   naam: string;
+  quiz?: Vraag[]; // Hier slaan we de vragen op
 }
 
 interface Props {
@@ -11,29 +14,26 @@ interface Props {
   onBack: () => void;
 }
 
-interface Vraag {
-  id: number;
-  vraagTekst: string;
-  antwoorden: string[]; // [goed, fout1, fout2, fout3]
-  correctAntwoordIndex: number; // meestal 0 als je het eerste antwoord altijd als 'goed' opslaat
-}
-
-interface Module {
-  id: number;
-  naam: string;
-  quiz?: Vraag[]; // Optioneel: niet elke module hoeft direct een quiz te hebben
-}
-
 const CourseDetail = ({ courseName, onBack }: Props) => {
+  // 2. States voor de modules en de interface-beheer
+  const [showQuizEditor, setShowQuizEditor] = useState(false);
+  const [activeModuleId, setActiveModuleId] = useState<number | null>(null);
+
   const [modules, setModules] = useState<Module[]>([
-    { id: 1, naam: 'Introductie' },
-    { id: 2, naam: 'Basis Concepten' }
+    { id: 1, naam: 'Introductie', quiz: [] },
+    { id: 2, naam: 'Netwerk Beveiliging', quiz: [] }
   ]);
+
+  // 3. Functies voor module beheer
+  const openQuizCreator = (id: number) => {
+    setActiveModuleId(id);
+    setShowQuizEditor(true);
+  };
 
   const voegModuleToe = () => {
     const naam = prompt("Naam van de nieuwe module:");
     if (naam) {
-      const nieuweModule = { id: Date.now(), naam };
+      const nieuweModule: Module = { id: Date.now(), naam, quiz: [] };
       setModules([...modules, nieuweModule]);
     }
   };
@@ -46,8 +46,26 @@ const CourseDetail = ({ courseName, onBack }: Props) => {
     }
   };
 
-  const startModule = (naam: string) => {
-    alert(`Module "${naam}" wordt gestart...`);
+  const startModule = (mod: Module) => {
+    if (!mod.quiz || mod.quiz.length === 0) {
+      alert(`De module "${mod.naam}" heeft nog geen quizvragen! Klik op 'Quiz Instellen'.`);
+    } else {
+      alert(`De quiz voor "${mod.naam}" met ${mod.quiz.length} vragen start nu!`);
+    }
+  };
+
+  // 4. De functie die de vraag daadwerkelijk in de juiste module zet
+  const handleSaveVraag = (nieuweVraag: Vraag) => {
+    setModules(prevModules => 
+      prevModules.map(m => {
+        if (m.id === activeModuleId) {
+          // Voeg de nieuwe vraag toe aan de bestaande quiz-array van deze module
+          return { ...m, quiz: [...(m.quiz || []), nieuweVraag] };
+        }
+        return m;
+      })
+    );
+    console.log("Vraag toegevoegd aan module:", activeModuleId);
   };
 
   return (
@@ -65,16 +83,37 @@ const CourseDetail = ({ courseName, onBack }: Props) => {
               <div className={styles.info}>
                 <span className={styles.moduleName}>{mod.naam}</span>
                 <button onClick={() => bewerkModule(mod.id)} className={styles.iconBtn}>✏️</button>
+                {mod.quiz && mod.quiz.length > 0 && (
+                  <span className={styles.quizBadge}>{mod.quiz.length} vragen</span>
+                )}
               </div>
-              <button 
-                onClick={() => startModule(mod.naam)} 
-                className={styles.playBtn}
-              >
-                Starten
-              </button>
+              
+              <div className={styles.buttonGroup}>
+                <button 
+                  onClick={() => openQuizCreator(mod.id)} 
+                  className={styles.quizBtn}
+                >
+                  📝 Quiz Instellen
+                </button>
+
+                <button 
+                  onClick={() => startModule(mod)} 
+                  className={styles.playBtn}
+                >
+                  Starten
+                </button>
+              </div>
             </div>
           ))}
         </div>
+
+        {/* Modal Overlay voor de Quiz Editor */}
+        {showQuizEditor && (
+          <QuizEditor 
+            onClose={() => setShowQuizEditor(false)} 
+            onSave={handleSaveVraag} 
+          />
+        )}
       </div>
     </div>
   );

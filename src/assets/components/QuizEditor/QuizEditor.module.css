@@ -1,0 +1,70 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal {
+  background: var(--bg-dark);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem;
+  width: 500px;
+  color: var(--text);
+}
+
+.input {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border-muted);
+  color: var(--text);
+  border-radius: 8px;
+}
+
+.answerGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.correctInput {
+  border: 1px solid var(--success);
+  background: var(--bg-light);
+  padding: 0.8rem;
+  border-radius: 8px;
+  color: var(--text);
+}
+
+.wrongInput {
+  border: 1px solid var(--danger);
+  background: var(--bg-light);
+  padding: 0.8rem;
+  border-radius: 8px;
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 2rem;
+}
+
+.saveBtn {
+  background: var(--primary);
+  color: var(--bg-dark);
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
