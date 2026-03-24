@@ -1,15 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {type Vraag} from '../../../utils/types';
 import styles from './QuizEditor.module.css';
 
 interface QuizEditorProps {
   onSave: (vraag: Vraag) => void;
   onClose: () => void;
+  vraagToEdit?: Vraag | null; // Nieuwe prop: de vraag die we bewerken
 }
 
-const QuizEditor = ({ onSave, onClose }: QuizEditorProps) => {
+  const QuizEditor = ({ onSave, onClose, vraagToEdit }: QuizEditorProps) => {
   const [vraagTekst, setVraagTekst] = useState('');
   const [antwoorden, setAntwoorden] = useState(['', '', '', '']);
+
+  // useEffect zorgt ervoor dat de velden gevuld worden als we gaan bewerken
+  useEffect(() => {
+    if (vraagToEdit) {
+      setVraagTekst(vraagToEdit.vraagTekst);
+      setAntwoorden(vraagToEdit.antwoorden);
+    }
+  }, [vraagToEdit]);
 
   const handleAntwoordChange = (index: number, waarde: string) => {
     const nieuweAntwoorden = [...antwoorden];
@@ -35,7 +44,7 @@ const QuizEditor = ({ onSave, onClose }: QuizEditorProps) => {
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
-        <h3>Nieuwe Quiz Vraag</h3>
+        <h3>{vraagToEdit ? 'Vraag Bewerken' : 'Nieuwe Quiz Vraag'}</h3>
         <p className={styles.hint}>Het eerste veld is altijd het <strong>juiste</strong> antwoord.</p>
         
         <input 
@@ -59,7 +68,9 @@ const QuizEditor = ({ onSave, onClose }: QuizEditorProps) => {
 
         <div className={styles.actions}>
           <button onClick={onClose} className={styles.cancelBtn}>Annuleren</button>
-          <button onClick={opslaan} className={styles.saveBtn}>Vraag Toevoegen</button>
+          <button onClick={opslaan} className={styles.saveBtn}>
+            {vraagToEdit ? 'Wijzigingen Opslaan' : 'Vraag Toevoegen'}
+          </button>
         </div>
       </div>
     </div>
