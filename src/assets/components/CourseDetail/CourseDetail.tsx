@@ -1,83 +1,89 @@
 import { useState } from 'react';
 import QuizEditor from '../QuizEditor/QuizEditor';
-import QuizManager from '../QuizManager/QuizManager'; // Zorg dat je dit pad checkt!
+import QuizManager from '../QuizManager/QuizManager';
+import QuizPlayer from '../QuizPlayer/QuizPlayer';
+import { type Vraag, STANDAARD_CATEGORIEEN } from '../../../utils/types';
 import styles from './CourseDetail.module.css';
-
-interface Vraag {
-  id: number;
-  vraagTekst: string;
-  antwoorden: string[];
-  correctAntwoordIndex: number;
-}
-
-interface Module {
-  id: number;
-  naam: string;
-  quiz?: Vraag[];
-}
 
 interface Props {
   courseName: string;
   onBack: () => void;
 }
 
-
 const CourseDetail = ({ courseName, onBack }: Props) => {
-  const [modules, setModules] = useState<Module[]>([
+  const [modules, setModules] = useState<any[]>([
     { id: 1, naam: 'Introductie', quiz: [] },
     { id: 2, naam: 'Netwerk Beveiliging', quiz: [] }
   ]);
 
-  // States voor navigatie en beheer
-  const [showQuizEditor, setShowQuizEditor] = useState(false);
+  // UI States
   const [viewingQuizModuleId, setViewingQuizModuleId] = useState<number | null>(null);
+  const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [editingVraag, setEditingVraag] = useState<Vraag | null>(null);
+  const [activeQuizModule, setActiveQuizModule] = useState<any>(null);
+  const [selectedCatForPlay, setSelectedCatForPlay] = useState<Record<number, string>>({});
 
-  // Zoek de actieve module op basis van het ID dat we bekijken
   const activeModule = modules.find(m => m.id === viewingQuizModuleId);
 
-  // --- Functies voor Quiz Beheer ---
+  // --- CORE LOGICA ---
 
+  // Vraag opslaan of bewerken
   const handleSaveVraag = (nieuweVraag: Vraag) => {
     setModules(prevModules =>
       prevModules.map(m => {
         if (m.id === viewingQuizModuleId) {
           const bestaandeQuiz = m.quiz || [];
-          // Als we aan het editen waren, vervang de oude vraag. Anders voeg toe.
+          // Als de vraag al bestond (editingVraag is set), vervang hem. Anders voeg toe.
           const updateVragen = editingVraag
-            ? bestaandeQuiz.map(q => q.id === nieuweVraag.id ? nieuweVraag : q)
+            ? bestaandeQuiz.map((q: Vraag) => q.id === nieuweVraag.id ? nieuweVraag : q)
             : [...bestaandeQuiz, nieuweVraag];
-
           return { ...m, quiz: updateVragen };
         }
         return m;
       })
     );
-    setEditingVraag(null); // Reset na opslaan
+    setEditingVraag(null);
   };
 
+  // Vraag verwijderen
   const verwijderVraag = (vraagId: number) => {
     if (window.confirm("Weet je zeker dat je deze vraag wilt verwijderen?")) {
       setModules(prev => prev.map(m => {
         if (m.id === viewingQuizModuleId) {
-          return { ...m, quiz: m.quiz?.filter(q => q.id !== vraagId) };
+          return { ...m, quiz: m.quiz?.filter((q: Vraag) => q.id !== vraagId) };
         }
         return m;
       }));
     }
   };
 
-  const openEditorVoorNieuw = () => {
-    setEditingVraag(null);
-    setShowQuizEditor(true);
+  // Bulk update van categorieën
+  const handleBulkUpdate = (nieuweCategorie: string) => {
+    setModules(prev => prev.map(m => {
+      if (m.id === viewingQuizModuleId) {
+        const updateVragen = (m.quiz || []).map((v: Vraag) => ({ ...v, categorie: nieuweCategorie }));
+        return { ...m, quiz: updateVragen };
+      }
+      return m;
+    }));
   };
 
-  const openEditorVoorBestaand = (vraag: Vraag) => {
-    setEditingVraag(vraag);
-    setShowQuizEditor(true);
-  };
+  // Quiz starten met optionele filter
+  const startQuiz = (mod: any) => {
+    const gekozenCat = selectedCatForPlay[mod.id] || 'Alle';
+    let vragenVoorQuiz = mod.quiz || [];
 
-  // --- Functies voor Module Beheer ---
+    if (gekozenCat !== 'Alle') {
+      vragenVoorQuiz = vragenVoorQuiz.filter((v: Vraag) => v.categorie === gekozenCat);
+    }
+
+    if (vragenVoorQuiz.length === 0) {
+      alert("Geen vragen gevonden in deze categorie!");
+      return;
+    }
+
+    setActiveQuizModule({ ...mod, quiz: vragenVoorQuiz });
+  };
 
   const voegModuleToe = () => {
     const naam = prompt("Naam van de nieuwe module:");
@@ -86,42 +92,40 @@ const CourseDetail = ({ courseName, onBack }: Props) => {
 
   // --- RENDER LOGICA ---
 
-  // SCHERM 1: De Quiz Manager (als er een module geselecteerd is om te beheren)
+  // SCHERM: Quiz Beheer (Manager)
   if (viewingQuizModuleId && activeModule) {
     return (
       <div className={styles.mainWrapper}>
-        <div className={styles.dashboard}>
-          <QuizManager
-            moduleNaam={activeModule.naam}
-            vragen={activeModule.quiz || []}
-            onBack={() => setViewingQuizModuleId(null)}
-            onAddVraag={openEditorVoorNieuw}
-            onDeleteVraag={verwijderVraag}
-            onEditVraag={openEditorVoorBestaand}
-            onImportVragen={(geimporteerdeVragen) => {
-              setModules(prev => prev.map(m => {
-                if (m.id === viewingQuizModuleId) {
-                  // We voegen de nieuwe vragen toe aan de huidige (of vervangen ze)
-                  return { ...m, quiz: [...(m.quiz || []), ...geimporteerdeVragen] };
-                }
-                return m;
-              }));
-            }}
-          />
+        <QuizManager
+          moduleNaam={activeModule.naam}
+          vragen={activeModule.quiz || []}
+          onBack={() => setViewingQuizModuleId(null)}
+          onAddVraag={() => { setEditingVraag(null); setShowQuizEditor(true); }}
+          onEditVraag={(v) => { setEditingVraag(v); setShowQuizEditor(true); }}
+          onDeleteVraag={verwijderVraag}
+          onImportVragen={(geimporteerdeVragen) => {
+            setModules(prev => prev.map(m => {
+              if (m.id === viewingQuizModuleId) {
+                return { ...m, quiz: [...(m.quiz || []), ...geimporteerdeVragen] };
+              }
+              return m;
+            }));
+          }}
+        />
 
-          {showQuizEditor && (
-            <QuizEditor
-              onClose={() => setShowQuizEditor(false)}
-              onSave={handleSaveVraag}
-              vraagToEdit={editingVraag}
-            />
-          )}
-        </div>
+        {showQuizEditor && (
+          <QuizEditor
+            onClose={() => setShowQuizEditor(false)}
+            onSave={handleSaveVraag}
+            vraagToEdit={editingVraag}
+            onBulkUpdate={handleBulkUpdate}
+          />
+        )}
       </div>
     );
   }
 
-  // SCHERM 2: Het standaard Module Overzicht
+  // SCHERM: Module Overzicht (Dashboard)
   return (
     <div className={styles.mainWrapper}>
       <div className={styles.dashboard}>
@@ -141,18 +145,36 @@ const CourseDetail = ({ courseName, onBack }: Props) => {
                 )}
               </div>
 
-              <div className={styles.buttonGroup}>
-                <button
-                  onClick={() => setViewingQuizModuleId(mod.id)}
-                  className={styles.quizBtn}
+              <div className={styles.playControls}>
+                {/* Selector staat nu direct naast de knoppen op dezelfde regel */}
+                <select
+                  className={styles.miniSelect}
+                  value={selectedCatForPlay[mod.id] || 'Alle'}
+                  onChange={(e) => setSelectedCatForPlay({ ...selectedCatForPlay, [mod.id]: e.target.value })}
                 >
-                  📝 Quiz Beheren
-                </button>
-                <button className={styles.playBtn}>Starten</button>
+                  <option value="Alle">Alles oefenen</option>
+                  {STANDAARD_CATEGORIEEN.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+
+                <div className={styles.buttonGroup}>
+                  <button className={styles.playBtn} onClick={() => startQuiz(mod)}>Starten</button>
+                  <button className={styles.quizBtn} onClick={() => setViewingQuizModuleId(mod.id)}>📝 Beheer</button>
+                </div>
               </div>
             </div>
           ))}
         </div>
+
+        {/* Overlay voor de Quiz speler */}
+        {activeQuizModule && (
+          <QuizPlayer
+            moduleNaam={activeQuizModule.naam}
+            vragen={activeQuizModule.quiz}
+            onClose={() => setActiveQuizModule(null)}
+          />
+        )}
       </div>
     </div>
   );
