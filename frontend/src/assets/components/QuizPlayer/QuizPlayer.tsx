@@ -18,7 +18,6 @@ const QuizPlayer = ({ moduleNaam, vragen, onClose }: QuizPlayerProps) => {
     const [isBeantwoord, setIsBeantwoord] = useState(false);
     const [showReview, setShowReview] = useState(false);
 
-    // Uitgebreide log met categorie-ondersteuning
     const [antwoordenLog, setAntwoordenLog] = useState<{
         vraag: string,
         gekozen: string,
@@ -28,30 +27,40 @@ const QuizPlayer = ({ moduleNaam, vragen, onClose }: QuizPlayerProps) => {
     }[]>([]);
 
     const huidigeVraag = vragen[huidigeIndex];
+    // FIX: Ondersteun zowel vraagTekst als vraag_tekst uit de DB
+    const displayTekst = huidigeVraag ? ((huidigeVraag as any).vraag_tekst || huidigeVraag.vraagTekst) : "";
+    const correctIdx = huidigeVraag ? ((huidigeVraag as any).correct_index ?? huidigeVraag.correctAntwoordIndex ?? 0) : 0;
+
     const voortgangPercentage = (huidigeIndex / vragen.length) * 100;
 
     useEffect(() => {
         if (huidigeVraag) {
-            const alle = huidigeVraag.antwoorden.map((t, i) => ({
+            let ants = huidigeVraag.antwoorden;
+            // Als antwoorden nog een JSON string is (gebeurt soms bij directe DB imports)
+            if (typeof ants === 'string') {
+                try { ants = JSON.parse(ants); } catch { ants = []; }
+            }
+
+            const alle = Array.isArray(ants) ? ants.map((t, i) => ({
                 tekst: t,
-                isCorrect: i === huidigeVraag.correctAntwoordIndex
-            }));
+                isCorrect: i === correctIdx
+            })) : [];
 
             setGehusseldeAntwoorden([...alle].sort(() => Math.random() - 0.5));
             setGekozenIndex(null);
             setIsBeantwoord(false);
         }
-    }, [huidigeIndex, huidigeVraag]);
+    }, [huidigeIndex, huidigeVraag, correctIdx]);
 
     const checkAntwoord = (index: number, isCorrect: boolean) => {
         if (isBeantwoord) return;
 
         const logItem = {
-            vraag: huidigeVraag.vraagTekst,
+            vraag: displayTekst,
             gekozen: gehusseldeAntwoorden[index].tekst,
-            correct: huidigeVraag.antwoorden[huidigeVraag.correctAntwoordIndex],
+            correct: huidigeVraag.antwoorden[correctIdx],
             isGoed: isCorrect,
-            categorie: huidigeVraag.categorie || 'Algemeen' // Pakt 'Algemeen' als categorie leeg is
+            categorie: huidigeVraag.categorie || 'Algemeen'
         };
 
         setAntwoordenLog(prev => [...prev, logItem]);
@@ -68,7 +77,6 @@ const QuizPlayer = ({ moduleNaam, vragen, onClose }: QuizPlayerProps) => {
         }
     };
 
-    // Helper om scores per categorie te berekenen
     const getCategorieStats = () => {
         const stats: Record<string, { goed: number; totaal: number }> = {};
         antwoordenLog.forEach(item => {
@@ -86,6 +94,8 @@ const QuizPlayer = ({ moduleNaam, vragen, onClose }: QuizPlayerProps) => {
         return `${styles.optieBtn} ${styles.gedimd}`;
     };
 
+    if (!huidigeVraag) return null;
+
     if (showResultaat) {
         const percentage = Math.round((score / vragen.length) * 100);
         const catStats = getCategorieStats();
@@ -97,7 +107,6 @@ const QuizPlayer = ({ moduleNaam, vragen, onClose }: QuizPlayerProps) => {
                     <p className={styles.subtitle}>{moduleNaam}</p>
 
                     <div className={styles.visualsGrid}>
-                        {/* 1. Donut Chart */}
                         <div className={styles.donutWrapper}>
                             <div
                                 className={styles.donut}
@@ -110,7 +119,6 @@ const QuizPlayer = ({ moduleNaam, vragen, onClose }: QuizPlayerProps) => {
                             <p className={styles.statLabel}>Totale Score</p>
                         </div>
 
-                        {/* 2. Categorie Breakdown */}
                         <div className={styles.categoryStats}>
                             <h4 className={styles.sectionTitle}>Sectie Analyse</h4>
                             {Object.entries(catStats).map(([name, data]) => {
@@ -181,7 +189,7 @@ const QuizPlayer = ({ moduleNaam, vragen, onClose }: QuizPlayerProps) => {
                     <span className={styles.countText}>Vraag {huidigeIndex + 1} / {vragen.length}</span>
                 </div>
 
-                <h2 className={styles.vraagTekst}>{huidigeVraag.vraagTekst}</h2>
+                <h2 className={styles.vraagTekst}>{displayTekst}</h2>
 
                 <div className={styles.optiesGrid}>
                     {gehusseldeAntwoorden.map((optie, i) => (
@@ -200,7 +208,6 @@ const QuizPlayer = ({ moduleNaam, vragen, onClose }: QuizPlayerProps) => {
                     ))}
                 </div>
 
-                {/* Plaats dit direct onder de </optiesGrid> in QuizPlayer.tsx */}
                 {isBeantwoord && huidigeVraag.uitleg && (
                     <div className={`${styles.uitlegBox} ${gehusseldeAntwoorden[gekozenIndex!].isCorrect ? styles.uitlegCorrect : styles.uitlegFout}`}>
                         <div className={styles.uitlegHeader}>

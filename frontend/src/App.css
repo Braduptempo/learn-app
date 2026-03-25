@@ -16,9 +16,8 @@
 }
 
 .app-layout {
- display: flex;
-  width: 100vw;  /* Gebruik de volle breedte van de viewport */
-  height: 100vh; /* Gebruik de volle hoogte */
-  background-color: var(--bg);
-  overflow: hidden; /* Voorkom dubbele scrollbars */ 
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }

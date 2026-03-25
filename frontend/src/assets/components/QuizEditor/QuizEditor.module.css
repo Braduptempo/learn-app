@@ -221,3 +221,46 @@
   color: var(--text-muted);
   opacity: 0.6;
 }
+
+/* De input voor het goede antwoord (Index 0) */
+.correctInput {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background-color: rgba(46, 204, 113, 0.1) !important; /* Lichtgroen */
+  border: 2px solid #2ecc71 !important; /* Fel groen */
+  border-radius: 10px;
+  color: white;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.correctInput:focus {
+  box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+  background-color: rgba(46, 204, 113, 0.15) !important;
+}
+
+/* De inputs voor de foute antwoorden */
+.wrongInput {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background-color: rgba(231, 76, 60, 0.05) !important; /* Lichtrood */
+  border: 1px solid rgba(231, 76, 60, 0.4) !important; /* Rood transparant */
+  border-radius: 10px;
+  color: var(--text-muted);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.wrongInput:focus {
+  border-color: #e74c3c;
+  background-color: rgba(231, 76, 60, 0.1) !important;
+  color: white;
+}
+
+/* De grid voor de antwoorden */
+.answerGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
